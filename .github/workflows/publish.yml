@@ -8,8 +8,8 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-dotnet@v6.1.0
         with:
           global-json-file: global.json
       - run: dotnet restore Fits.slnx
@@ -19,7 +19,14 @@ jobs:
       - name: Publish package
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: dotnet nuget push artifacts/*.nupkg --source https://nuget.pkg.github.com/solster/index.json --api-key "$NUGET_AUTH_TOKEN"
+        run: dotnet nuget push artifacts/*.nupkg --source https://nuget.pkg.github.com/solster/index.json --api-key "$NUGET_AUTH_TOKEN" --skip-duplicate
+      - name: Verify private visibility
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          visibility=$(gh api orgs/solster/packages/nuget/Solster.Fits --jq .visibility)
+          echo "Package visibility: $visibility"
+          test "$visibility" = private
       - name: Verify published package restore
         env:
           NuGetPackageSourceCredentials_github: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }};ValidAuthenticationTypes=Basic
@@ -29,9 +36,10 @@ jobs:
           cat > "$RUNNER_TEMP/fits-consumer/Consumer.csproj" <<EOF
           <Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net11.0</TargetFramework></PropertyGroup><ItemGroup><PackageReference Include="Solster.Fits" Version="$version" /></ItemGroup></Project>
           EOF
+          echo 'public static class Probe { public static Solster.Fits.FitsReader Create() => new(); }' > "$RUNNER_TEMP/fits-consumer/Probe.cs"
           dotnet restore "$RUNNER_TEMP/fits-consumer/Consumer.csproj" --configfile NuGet.Config --packages "$RUNNER_TEMP/fits-packages"
           dotnet build "$RUNNER_TEMP/fits-consumer/Consumer.csproj" --no-restore
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.2
         with:
           name: nuget-package
           path: artifacts/*.nupkg
