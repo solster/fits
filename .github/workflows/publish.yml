@@ -8,6 +8,10 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
+      - name: Require private publishing repository
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .private)" = true
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-dotnet@v6.1.0
         with:

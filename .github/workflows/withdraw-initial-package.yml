@@ -1,0 +1,18 @@
+name: Withdraw initial package
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: write
+jobs:
+  withdraw:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove only the newly created initial package
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          versions=$(gh api orgs/solster/packages/nuget/Solster.Fits/versions)
+          test "$(echo "$versions" | jq length)" = 1
+          test "$(echo "$versions" | jq -r '.[0].name')" = 0.1.0
+          gh api --method DELETE orgs/solster/packages/nuget/Solster.Fits
