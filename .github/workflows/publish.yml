@@ -1,0 +1,37 @@
+name: Publish
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet restore Fits.slnx
+      - run: dotnet build Fits.slnx -c Release --no-restore
+      - run: dotnet test Fits.slnx -c Release --no-build
+      - run: dotnet pack src/Solster.Fits -c Release --no-build -o artifacts
+      - name: Publish package
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet nuget push artifacts/*.nupkg --source https://nuget.pkg.github.com/solster/index.json --api-key "$NUGET_AUTH_TOKEN"
+      - name: Verify published package restore
+        env:
+          NuGetPackageSourceCredentials_github: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }};ValidAuthenticationTypes=Basic
+        run: |
+          version=$(dotnet msbuild src/Solster.Fits/Solster.Fits.csproj -getProperty:Version)
+          mkdir -p "$RUNNER_TEMP/fits-consumer"
+          cat > "$RUNNER_TEMP/fits-consumer/Consumer.csproj" <<EOF
+          <Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net11.0</TargetFramework></PropertyGroup><ItemGroup><PackageReference Include="Solster.Fits" Version="$version" /></ItemGroup></Project>
+          EOF
+          dotnet restore "$RUNNER_TEMP/fits-consumer/Consumer.csproj" --configfile NuGet.Config --packages "$RUNNER_TEMP/fits-packages"
+          dotnet build "$RUNNER_TEMP/fits-consumer/Consumer.csproj" --no-restore
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nuget-package
+          path: artifacts/*.nupkg

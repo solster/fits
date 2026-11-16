@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>Solster.Fits</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Solster Limited</Authors>
+    <Description>Low-allocation streaming FITS image reading with caller-owned buffers.</Description>
+    <RepositoryUrl>https://github.com/solster/fits</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup><None Include="../../README.md" Pack="true" PackagePath="/" /></ItemGroup>
+</Project>
