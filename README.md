@@ -73,7 +73,7 @@ results depend on hardware, runtime and tiered compilation. Allocations are meas
 Package ID: `Solster.Fits`. Feed: `https://nuget.pkg.github.com/solster/index.json`.
 The `Publish` GitHub Actions workflow builds, tests, packs and publishes using a repository-scoped
 GITHUB_TOKEN with packages:write. Run it manually after changing the project Version; versions are immutable.
-New packages are private by default; retain private visibility in package settings.
+The package is public and linked to the public `solster/fits` repository. The workflow verifies public visibility.
 Local consumers need a GitHub credential with read:packages and access to the package.
 Keep credentials outside version control, for example through NuGet's `NuGetPackageSourceCredentials_github`
 environment variable or a credential provider. The astrophotography repo configures source mapping for this package.

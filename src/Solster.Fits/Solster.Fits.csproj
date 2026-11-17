@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageId>Solster.Fits</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Authors>Solster Limited</Authors>
     <Description>Low-allocation streaming FITS image reading with caller-owned buffers.</Description>
     <RepositoryUrl>https://github.com/solster/fits</RepositoryUrl>

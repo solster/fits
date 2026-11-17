@@ -8,10 +8,6 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - name: Require private publishing repository
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: test "$(gh api "repos/$GITHUB_REPOSITORY" --jq .private)" = true
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-dotnet@v6.1.0
         with:
@@ -24,13 +20,13 @@ jobs:
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: dotnet nuget push artifacts/*.nupkg --source https://nuget.pkg.github.com/solster/index.json --api-key "$NUGET_AUTH_TOKEN" --skip-duplicate
-      - name: Verify private visibility
+      - name: Verify public visibility
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           visibility=$(gh api orgs/solster/packages/nuget/Solster.Fits --jq .visibility)
           echo "Package visibility: $visibility"
-          test "$visibility" = private
+          test "$visibility" = public
       - name: Verify published package restore
         env:
           NuGetPackageSourceCredentials_github: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }};ValidAuthenticationTypes=Basic
